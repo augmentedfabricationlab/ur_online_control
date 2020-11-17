@@ -1,7 +1,10 @@
 from compas.datastructures import Mesh
 from compas.geometry import Frame
 from compas.geometry import transform_points
-from compas.geometry.xforms import Transformation
+from compas.geometry import Transformation
+
+#from compas_ghpython.geometry.xforms import xform_from_transformation
+from compas_ghpython.geometry.xforms import xtransformed
 
 
 def transform_point(p, T):
@@ -23,9 +26,12 @@ class Tool(object):
 
     def __init__(self, tcp_frame):
 
-        self.model = []
+        self.model = [] #mesh
+        self.model_breps = [] #breps
+
         self.tool0_frame = Frame.worldXY()
         self.tcp_frame = tcp_frame
+        
         self.transformation_tool0_tcp = Transformation.from_frame_to_frame(self.tcp_frame, self.tool0_frame)
         self.transformation_tcp_tool0 = Transformation.from_frame_to_frame(self.tool0_frame, self.tcp_frame)
 
@@ -38,7 +44,35 @@ class Tool(object):
         """
         raise NotImplementedError
 
-    def get_transformed_model(self, transformation, xtransform_function=None):
+    def get_transformed_model(self, transformation):
+        """Get the transformed meshes of the tool model.
+        Args:
+            transformation (:class:`Transformation`): The transformation to
+                reach tool0_frame.
+        Returns:
+            model (:obj:`list` of :class:`Mesh`): The list of meshes in the
+                respective class of the CAD environment
+        """
+        tmodel = []
+        for m in self.model:
+            tmodel.append(xtransformed(m, transformation))
+        return tmodel
+
+    def get_transformed_model_brep(self, transformation):
+        """Get the transformed meshes of the tool model.
+        Args:
+            transformation (:class:`Transformation`): The transformation to
+                reach tool0_frame.
+        Returns:
+            model (:obj:`list` of :class:`Mesh`): The list of meshes in the
+                respective class of the CAD environment
+        """
+        tmodel = []
+        for m in self.model_breps:
+            tmodel.append(xtransformed(m, transformation))
+        return tmodel
+
+    def _get_transformed_model(self, transformation, xtransform_function=None):
         """Get the transformed meshes of the tool model.
 
         Args:
